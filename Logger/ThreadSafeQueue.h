@@ -23,36 +23,62 @@
  */
 
 
-#ifndef LOGGER_ILOGGER_H
-#define LOGGER_ILOGGER_H
-
-#include <string>
+#ifndef LOGGER_THREADSAFEQUEUE_H
+#define LOGGER_THREADSAFEQUEUE_H
 
 namespace logger
 {
 
-enum InfoType
-{
-    INFO,
-    ERROR
-};
-
-struct LogMessage
-{
-    InfoType infoType;
-    std::string module;
-    std::string subject;
-    std::string message;
-};
-
-class ILogger
+class ThreadSafeQueueBase
 {
 public:
-    virtual ~ILogger() {}
+    ThreadSafeQueueBase();
 
-    virtual void log(const LogMessage& logMsg, unsigned int threadId = 0) = 0;
+    ~ThreadSafeQueueBase();
+
+    void push(void* value);
+
+    void* pop();
+
+private:
+    ThreadSafeQueueBase(const ThreadSafeQueueBase&);
+    ThreadSafeQueueBase& operator= (const ThreadSafeQueueBase&);
+
+    struct Impl;
+    Impl* m_impl;
+};
+
+template<typename T>
+class ThreadSafeQueue
+{
+public:
+    ThreadSafeQueue()
+    {
+
+    }
+
+    ~ThreadSafeQueue()
+    {
+
+    }
+
+    void push(T* value)
+    {
+        m_baseQueue.push(value);
+    }
+
+    T* pop()
+    {
+        return static_cast<T*>(m_baseQueue.pop());
+    }
+
+private:
+    ThreadSafeQueue(const ThreadSafeQueue&);
+    ThreadSafeQueue& operator= (const ThreadSafeQueue&);
+
+    ThreadSafeQueueBase m_baseQueue;
 };
 
 }
 
-#endif // LOGGER_ILOGGER_H
+#endif // LOGGER_THREADSAFEQUEUE_H

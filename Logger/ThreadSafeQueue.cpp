@@ -23,36 +23,72 @@
  */
 
 
-#ifndef LOGGER_ILOGGER_H
-#define LOGGER_ILOGGER_H
+#include "ThreadSafeQueue.h"
 
-#include <string>
+#include <QMutex>
+#include <QMutexLocker>
+
+#include <queue>
 
 namespace logger
 {
 
-enum InfoType
+struct ThreadSafeQueueBase::Impl
 {
-    INFO,
-    ERROR
+    std::queue<void*> m_queue;
+    QMutex m_mutex;
+
+    Impl()
+    {
+
+    }
+
+    ~Impl()
+    {
+
+    }
+
+    void push(void* value)
+    {
+        QMutexLocker locker(&m_mutex);
+        m_queue.push(value);
+    }
+
+    void* pop()
+    {
+        QMutexLocker locker(&m_mutex);
+
+        if(m_queue.empty())
+        {
+            return nullptr;
+        }
+
+        void* retVal = m_queue.front();
+        m_queue.pop();
+
+        return retVal;
+    }
 };
 
-struct LogMessage
+ThreadSafeQueueBase::ThreadSafeQueueBase() : m_impl(new Impl)
 {
-    InfoType infoType;
-    std::string module;
-    std::string subject;
-    std::string message;
-};
-
-class ILogger
-{
-public:
-    virtual ~ILogger() {}
-
-    virtual void log(const LogMessage& logMsg, unsigned int threadId = 0) = 0;
-};
 
 }
 
-#endif // LOGGER_ILOGGER_H
+ThreadSafeQueueBase::~ThreadSafeQueueBase()
+{
+    delete m_impl;
+    m_impl = nullptr;
+}
+
+void ThreadSafeQueueBase::push(void* value)
+{
+    m_impl->push(value);
+}
+
+void* ThreadSafeQueueBase::pop()
+{
+    return m_impl->pop();
+}
+
+}

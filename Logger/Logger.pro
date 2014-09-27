@@ -14,7 +14,8 @@ SOURCES += \
     AsynchronousLogger.cpp \
     SynchronousLogger.cpp \
     Test.cpp \
-    LoggerUtil.cpp
+    LoggerUtil.cpp \
+    ThreadSafeQueue.cpp
 
 HEADERS += \
     AsynchronousLogger.h \
@@ -23,7 +24,8 @@ HEADERS += \
     ILogger.h \
     SynchronousLogger.h \
     ILoggingSource.h \
-    LoggerUtil.h
+    LoggerUtil.h \
+    ThreadSafeQueue.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
